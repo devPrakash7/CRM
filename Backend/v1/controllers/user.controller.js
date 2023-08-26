@@ -21,8 +21,7 @@ const {
 
 
 
-
-exports.signUp = async (req, res) => {
+exports.add_employee = async (req, res) => {
 
     try {
 
@@ -116,7 +115,6 @@ exports.login = async (req, res, next) => {
 
         let resData = user
         resData.tokens = '';
-
 
         delete resData.reset_password_token;
         delete resData.reset_password_expires;

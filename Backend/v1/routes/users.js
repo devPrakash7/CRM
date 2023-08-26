@@ -2,13 +2,12 @@ const express = require('express');
 const router = express.Router();
 const authenticate = require('../../middleware/authenticate');
 const {
-  login, signUp, accountVerify, logout, search_all_employee, search_employee, update_employee, delete_employee,
+  login, accountVerify, logout, search_all_employee, search_employee, update_employee, delete_employee, add_employee,
 } = require('../controllers/user.controller')
-const isAdmin = require('../../middleware/check_userRoled')
 const adminAuthenticate = require('../../middleware/admin.authenticate')
 
 
-router.post('/signUp', signUp);
+router.post('/signUp', add_employee);
 router.post('/login', login);
 router.post('/account_verify' , accountVerify);
 router.get('/logout' , authenticate , logout);
