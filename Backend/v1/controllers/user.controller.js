@@ -275,8 +275,7 @@ exports.update_employee = async (req , res ,next) => {
           const checkAdmin = await User.findById(decoded._id);
 
           if(checkAdmin.user_type !== 1)
-
-          return req.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:'user not admin'})
+          return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:'user not admin'})
           reqBody.updated_at = dateFormat.set_current_date();
           const employee = await User.findOneAndUpdate({_id: employeeId }, reqBody ,{ new:true });
           
@@ -294,7 +293,6 @@ exports.delete_employee = async (req , res ,next) => {
     try {
         
         const { employeeId } = req.query;
-        const reqBody = req.body;
         const bearerToken = req.headers.authorization;
 
         if (!bearerToken || !bearerToken.startsWith('Bearer ')) {

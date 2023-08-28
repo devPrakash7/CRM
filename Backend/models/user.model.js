@@ -4,8 +4,8 @@ const jwt = require("jsonwebtoken");
 const constants = require("../config/constants");
 const dateFormat = require("../helper/dateformat.helper");
 const { JWT_SECRET } = require("../keys/keys");
-
 const Schema = mongoose.Schema;
+
 
 //Define user schema
 const userSchema = new Schema({
@@ -29,15 +29,16 @@ const userSchema = new Schema({
   lastName: {
     type: String,
   },
+  departmentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'department', 
+    default:null
+  },
   hireDate: {
     type: String,
     default: dateFormat.set_current_timestamp(),
   },
-
   jobTitle: String,
-
-  department: String,
-
   user_type: {
     type: Number, // admin-1 , 3-employee , 2-manager
     default: 3,
@@ -155,5 +156,5 @@ userSchema.methods.generateRefreshToken = async function () {
 };
 
 //Define user model
-const User = mongoose.model("users", userSchema);
+const User = mongoose.model("employee", userSchema);
 module.exports = User;

@@ -8,6 +8,9 @@ const flash = require('connect-flash');
 const app = express();
 const userRouter = require('./v1/routes/users')
 const adminRouter = require('./admin/routes/admin')
+const departmentRouter = require('./v1/routes/department')
+const managerRouter = require('./manager/routes/manager_routes')
+
 
 app.use(flash());
 app.use(cors());
@@ -38,7 +41,9 @@ app.get('/' ,  (req , res)  => {
 
 
 app.use('/v1/users' , userRouter)
+app.use('/v1/department' , departmentRouter)
 app.use('/admin' , adminRouter)
+app.use('/manager' , managerRouter)
 
 
 //Database connection with mongodb

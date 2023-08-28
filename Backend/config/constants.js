@@ -3,7 +3,7 @@ module.exports = {
 	// 'PORT': process.env.PORT || 8090,
 	// 'NODE_ENV': 'development',
 	'STATUS': {'INACTIVE': 0 , 'ACTIVE': 1, 'DE_ACTIVE': 2},
-	'WORKOUT_STATUS': {'INACTIVE': 0 , 'PUBLISHED': 1, 'DRAFT': 2}, 
+	'DEPARTMENT_STATUS': {1:'ACTIVE', 0:'DEACTIVE'},
 	// 'JWT_SECRET': 'bmp',
 	'PAGE_DATA_LIMIT': 10,
 	'DATA_LIMIT': 6,
