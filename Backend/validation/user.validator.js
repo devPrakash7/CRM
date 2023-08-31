@@ -1,5 +1,5 @@
 
-const { body, validationResult } = require('express-validator');
+const { body,query, validationResult } = require('express-validator');
 
 
 //validate user form detail
@@ -94,76 +94,34 @@ body('password')
 
 exports.search_all_employee_validator = [
 
-  body('email')
+  query('email')
   .not()
   .isEmpty()
-  .withMessage('email is required')
+  .withMessage('email or mobileNumer is required')
   .isString()
-  .withMessage('email should be a string')
+  .withMessage('email or mobileNumer should be a string')
   .isEmail().withMessage('please enter a valid email')
   .trim(),
-
-  body('mobileNumber')
-  .not()
-  .isEmpty()
-  .withMessage('mobileNumber is required')
-  .trim()
-  .isLength({ min: 10 })
-  .withMessage('password length mus be 10')
-  .isMobilePhone()
-  .withMessage('please enter a valid mobileNumber')
-  .isString()
-  .withMessage('mobileNumber shoulde be a string')
-  .trim() ,
-
-  body('firstName')
-  .not()
-  .isEmpty()
-  .withMessage('firstName is required')
-  .isString()
-  .withMessage('firstName shoulde be a string')
-  .trim() ,
      
 ]
 
 
 exports.search_employee_validator = [
 
-  body('email')
+  query('email')
   .not()
   .isEmpty()
-  .withMessage('email is required')
+  .withMessage('email or mobileNumer is required')
   .isString()
-  .withMessage('email should be a string')
+  .withMessage('email or mobileNumer should be a string')
   .isEmail().withMessage('please enter a valid email')
   .trim(),
-
-  body('mobileNumber')
-  .not()
-  .isEmpty()
-  .withMessage('mobileNumber is required')
-  .trim()
-  .isLength({ min: 10 })
-  .withMessage('password length mus be 10')
-  .isMobilePhone()
-  .withMessage('please enter a valid mobileNumber')
-  .isString()
-  .withMessage('mobileNumber shoulde be a string')
-  .trim() ,
-
-  body('firstName')
-  .not()
-  .isEmpty()
-  .withMessage('firstName is required')
-  .isString()
-  .withMessage('firstName shoulde be a string')
-  .trim() ,
 
 ]
 
 exports.update_employee_validator = [
 
-    body('employeeId')
+    query('employeeId')
     .not().isEmpty()
     .withMessage('employeeId is required')
     .isString()
@@ -177,7 +135,7 @@ exports.update_employee_validator = [
 
 exports.delete_employee_validator = [
 
-  body('employeeId')
+  query('employeeId')
   .not().isEmpty()
   .withMessage('employeeId is required')
   .isString()

@@ -32,7 +32,9 @@ module.exports = {
         search_all_employee:'sucessfully search all employees',
         search_employee:'sucessfully search employees',
         update_employee:'sucessfully update employee',
-        delete_employee:'sucessfully delete employee'
+        delete_employee:'sucessfully delete employee',
+        check_for_admin:'your are not admin , only admin can be added',
+        only_searched_employees_data : 'only searched employee this email or mobileNumber for admin or manager'
     },
 
     'DEPARTMENT':{

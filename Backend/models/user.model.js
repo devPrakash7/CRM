@@ -29,7 +29,7 @@ const userSchema = new Schema({
   lastName: {
     type: String,
   },
-  departmentId: {
+  department: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'department', 
     default:null

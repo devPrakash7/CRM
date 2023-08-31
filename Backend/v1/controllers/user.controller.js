@@ -26,9 +26,18 @@ exports.add_employee = async (req, res) => {
     try {
 
         const reqBody = req.body
-        console.log(req.body);
-        const checkMail = await isValid(reqBody.email)
+        const bearerToken = req.headers.authorization;
 
+        if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
+            return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
+        }
+        const token = bearerToken.replace('Bearer ', '');
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const checkAdmin = await User.findById(decoded._id);
+        if (checkAdmin.user_type !== 1)
+            return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'USER.check_for_admin', {}, req.headers.lang);
+
+        const checkMail = await isValid(reqBody.email)
         if (checkMail == false) return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'GENERAL.blackList_mail', {}, req.headers.lang);
 
         let existingUser = await getUser(reqBody.email, 'email');
@@ -41,7 +50,7 @@ exports.add_employee = async (req, res) => {
             await deleteUser(existingUser._id)
         }
 
-    
+
         reqBody.password = await bcrypt.hash(reqBody.password, 10);
         reqBody.created_at = await dateFormat.set_current_timestamp();
         reqBody.updated_at = await dateFormat.set_current_timestamp();
@@ -50,7 +59,7 @@ exports.add_employee = async (req, res) => {
         }, JWT_SECRET, {
             expiresIn: constants.URL_EXPIRE_TIME
         })
-       
+
 
         const user = await Usersave(reqBody);
         let resData = user
@@ -81,7 +90,7 @@ exports.logout = async (req, res, next) => {
         UserData.refresh_tokens = null
 
         await UserData.save()
-        sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'USER.logout_success', UserData , req.headers.lang);
+        sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'USER.logout_success', UserData, req.headers.lang);
 
     } catch (err) {
         console.log(err)
@@ -133,15 +142,15 @@ exports.login = async (req, res, next) => {
 exports.accountVerify = async (req, res, next) => {
 
     try {
-        
+
         const userId = req.query.user_id
-        const data = await User.findOneAndUpdate({_id : userId}  , {$set:{verify_token : true}} , {new:true});
+        const data = await User.findOneAndUpdate({ _id: userId }, { $set: { verify_token: true } }, { new: true });
         // if (data == 1) {
         //     res.redirect(BASEURL + `v1/users/email-verify/verify?user_id=${userId}`)
         // } else {
         //     res.redirect(BASEURL + `v1/users/email-verify/unverify?user_id=${userId}`)
         // }
-        
+
         sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'USER.user_account_verify', data, req.headers.lang);
 
     } catch (err) {
@@ -151,170 +160,175 @@ exports.accountVerify = async (req, res, next) => {
 }
 
 
-exports.search_all_employee = async (req , res , next) => {
+exports.search_all_employee = async (req, res, next) => {
 
     try {
-        
+
         const {
             email,
-            firstName,
             mobileNumber,
             page = 1,
             limit = 10,
             offset = 0,
             sortBy = "created_at",
             sortOrder = "email",
-          } = req.query;
-      
-          const query = {};
-      
-          if (email) {
-            query.email = { $regex: email, $options: "i" }; // Case-insensitive search by email
-          }
-      
-          if (firstName) {
-            query.firstName = { $regex: firstName, $options: "i" }; // Case-insensitive search by customer name
-          }
-      
-          if (mobileNumber) {
-            query.mobileNumber = { $regex: mobileNumber, $options: "i" }; // Case-insensitive search by customer name
-          }
-          // Calculate skip for pagination
-          const skip = (parseInt(page) - 1) * parseInt(limit) + parseInt(offset);
+        } = req.query;
 
-          const projection = {
-            user_type: 3,
+        const query = {};
+
+        if (email) {
+            query.email = { $regex: email, $options: "i" }; // Case-insensitive search by email
+        }
+
+        if (mobileNumber) {
+            query.mobileNumber = { $regex: mobileNumber, $options: "i" }; // Case-insensitive search by customer name
+        }
+        // Calculate skip for pagination
+        const skip = (parseInt(page) - 1) * parseInt(limit) + parseInt(offset);
+
+        const projection = {
             email: 1,
             firstName: 1,
             mobileNumber: 1,
-            lastName:1,
-            jobTitle:1,
-            department:1,
-            hireDate:1
+            lastName: 1,
+            jobTitle: 1,
+            department: 1,
+            hireDate: 1,
+            department: 1,
+            user_type: 1
         };
-        
-        
+
+
         const Empoyee = await User.find(query, projection)
+            .populate('department', 'description departmentName status')
             .sort({ [sortBy]: sortOrder === "asc" ? 1 : -1 })
             .skip(skip)
             .limit(parseInt(limit));
-      
-        sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'USER.search_all_employeey', Empoyee , req.headers.lang);
+
+        Empoyee.map((userType) => {
+
+            if (userType.user_type === 1 || userType.user_type === 2) {
+                sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'USER.only_searched_employees_data', {}, req.headers.lang);
+            }
+        })
+
+        sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'USER.search_all_employeey', Empoyee, req.headers.lang);
 
     } catch (err) {
         console.log(err)
         sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
     }
-     
+
 }
 
 
 
-exports.search_employee = async (req , res , next) => {
+exports.search_employee = async (req, res, next) => {
 
     try {
-        
+
         const {
             email,
-            firstName,
             mobileNumber,
             page = 1,
             limit = 10,
             offset = 0,
             sortBy = "created_at",
             sortOrder = "email",
-          } = req.query;
-      
-          const query = {};
-      
-          if (email) {
+        } = req.query;
+
+        const query = {};
+
+        if (email) {
             query.email = { $regex: email, $options: "i" }; // Case-insensitive search by email
-          }
-      
-          if (firstName) {
-            query.firstName = { $regex: firstName, $options: "i" }; // Case-insensitive search by customer name
-          }
-      
-          if (mobileNumber) {
+        }
+
+        if (mobileNumber) {
             query.mobileNumber = { $regex: mobileNumber, $options: "i" }; // Case-insensitive search by customer name
-          }
-          // Calculate skip for pagination
-          const skip = (parseInt(page) - 1) * parseInt(limit) + parseInt(offset);
-        
-        const Employee = await User.findOne({user_type: 3 || email || mobileNumber || firstName})
+        }
+        // Calculate skip for pagination
+        const skip = (parseInt(page) - 1) * parseInt(limit) + parseInt(offset);
+
+        const Employee = await User.findOne({ user_type: 3 || email || mobileNumber || firstName })
+            .populate('department', 'description departmentName status')
             .sort({ [sortBy]: sortOrder === "asc" ? 1 : -1 })
             .skip(skip)
             .limit(parseInt(limit));
-      
-        sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'USER.search_employee', Employee , req.headers.lang);
+
+        if (Employee.user_type === 1 || Employee.user_type === 2) {
+            sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'USER.only_searched_employees_data', {}, req.headers.lang);
+        }
+
+        sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'USER.search_employee', Employee, req.headers.lang);
 
     } catch (err) {
         console.log(err)
         sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
     }
-     
+
 }
 
 
-exports.update_employee = async (req , res ,next) => {
+
+exports.update_employee = async (req, res, next) => {
 
     try {
-        
+
         const { employeeId } = req.query;
         const reqBody = req.body;
         const bearerToken = req.headers.authorization;
 
         if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
-          return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
+            return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
         }
-    
-           const token = bearerToken.replace('Bearer ', '');
-    
-          const decoded = jwt.verify(token, JWT_SECRET); // Replace with your actual secret key
-        
-          const checkAdmin = await User.findById(decoded._id);
 
-          if(checkAdmin.user_type !== 1)
-          return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:'user not admin'})
-          reqBody.updated_at = dateFormat.set_current_date();
-          const employee = await User.findOneAndUpdate({_id: employeeId }, reqBody ,{ new:true });
-          
-        return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'USER.update_employee', employee , req.headers.lang);
+        const token = bearerToken.replace('Bearer ', '');
+
+        const decoded = jwt.verify(token, JWT_SECRET); // Replace with your actual secret key
+
+        const checkAdmin = await User.findById(decoded._id);
+
+        if (checkAdmin.user_type !== 1)
+            return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({ status: constants.STATUS_CODE.FAIL, msg: 'user not admin' })
+        reqBody.updated_at = dateFormat.set_current_date();
+        const employee = await User.findOneAndUpdate({ _id: employeeId }, reqBody, { new: true });
+
+        return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'USER.update_employee', employee, req.headers.lang);
 
     } catch (err) {
         console.log(err)
-       return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+        return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
     }
 }
 
 
-exports.delete_employee = async (req , res ,next) => {
+exports.delete_employee = async (req, res, next) => {
 
     try {
-        
+
         const { employeeId } = req.query;
         const bearerToken = req.headers.authorization;
 
         if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
-          return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
+            return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
         }
-    
-           const token = bearerToken.replace('Bearer ', '');
-    
-          const decoded = jwt.verify(token, JWT_SECRET); // Replace with your actual secret key
-        
-          const checkAdmin = await User.findById(decoded._id);
 
-          if(checkAdmin.user_type !== 1)
-          
-          return req.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:'user not admin'})
+        const token = bearerToken.replace('Bearer ', '');
 
-          const employee = await User.findOneAndDelete({_id:employeeId})
+        const decoded = jwt.verify(token, JWT_SECRET); // Replace with your actual secret key
 
-        return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'USER.delete_employee', employee , req.headers.lang);
+        const checkAdmin = await User.findById(decoded._id);
+
+        if (checkAdmin.user_type !== 1)
+
+            return req.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({ status: constants.STATUS_CODE.FAIL, msg: 'user not admin' })
+
+        const employee = await User.findOneAndDelete({ _id: employeeId })
+
+        return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'USER.delete_employee', employee, req.headers.lang);
 
     } catch (err) {
         console.log(err)
-       return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+        return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
     }
 }
