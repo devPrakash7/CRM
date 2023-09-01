@@ -10,6 +10,9 @@ const userRouter = require('./v1/routes/users')
 const adminRouter = require('./admin/routes/admin')
 const departmentRouter = require('./v1/routes/department')
 const managerRouter = require('./manager/routes/manager_routes')
+const attendanceRouter = require('./v1/routes/attendance')
+
+
 
 
 app.use(flash());
@@ -44,6 +47,7 @@ app.use('/v1/users' , userRouter)
 app.use('/v1/department' , departmentRouter)
 app.use('/admin' , adminRouter)
 app.use('/manager' , managerRouter)
+app.use('/v1/attendance' , attendanceRouter)
 
 
 //Database connection with mongodb

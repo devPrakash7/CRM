@@ -22,10 +22,9 @@ module.exports = {
 		'MANAGER': 2,
 		'EMPLOYEE': 3
 	},
-	'USER_SKILL': {
-		'BEGGINER': 1,
-		'INTERMEDIATE': 2,
-		'ADVANCED': 3
+	'ATTENDANCE_STATUS': {
+		'PRESENT': 'present',
+		'ABSENT': 'absent',
 	},
 	'SOCIAL_LOGIN_TYPE': {
 		'FACEBOOK': 1,

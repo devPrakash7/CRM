@@ -1,20 +1,23 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 const dateFormat = require("../helper/dateformat.helper")
-
+const constants = require('../config/constants')
 
 
 const attendanceSchema = new Schema({
 
-    user: {
+    employeeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'employee',
     },
     date: {
         type:String,
-        default:dateFormat.set_current_timestamp();
+        default:dateFormat.set_current_timestamp()
     },
-    status: String // 'present', 'absent', etc.
+    status: {
+        type:String,
+        default: constants.ATTENDANCE_STATUS.PRESENT
+    } // 'present', 'absent', etc.
 
   });
 

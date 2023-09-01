@@ -49,6 +49,14 @@ module.exports = {
        department_status_updated : 'department status updated sucessfully'
     },
 
+    'ATTENDANCE':{
+        mark_attendance : 'mark attendance sucessfully',
+        check_for_admin : 'your are not admin',
+        not_found:'Bearer token missing or invalid',
+        get_employee_attendance: 'sucessfully get employee attendance',
+        employee_not_found : 'employee not found'
+    },
+
     'GENERAL': {
         
         general_error_content: 'Something went wrong. Please try again later.',
