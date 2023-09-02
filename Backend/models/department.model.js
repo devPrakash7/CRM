@@ -1,17 +1,24 @@
 const mongoose = require('mongoose');
 const constants = require('../config/constants')
+const dateformat = require("../helper/dateformat.helper")
+
 
 // Define the Department Schema
 const departmentSchema = new mongoose.Schema({
 
-departmentName: {
+name: {
     type: String,
     unique: true, // Ensure department names are unique
   },
   description: String,
-  status:{
-    type:String,
-    default:constants.DEPARTMENT_STATUS[1]
+  location:String,
+  employeeId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'employee',
+  },
+  isActive:{
+    type:Boolean,
+    default:true
   },
   created_at: {
     type: String,
@@ -19,10 +26,6 @@ departmentName: {
   updated_at: {
     type: String,
   },
-  deleted_at :{
-      type:String,
-      default:null
-  }
 });
 
 

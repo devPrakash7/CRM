@@ -14,10 +14,13 @@ const attendanceSchema = new Schema({
         type:String,
         default:dateFormat.set_current_timestamp()
     },
-    status: {
+    attendance_type: {
         type:String,
-        default: constants.ATTENDANCE_STATUS.PRESENT
-    } // 'present', 'absent', etc.
+        default: constants.ATTENDANCE_STATUS.PRESENT // 'present', 'absent', etc.
+    },
+    location:{
+      type:String
+    }
 
   });
 

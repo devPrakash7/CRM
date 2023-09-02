@@ -139,28 +139,8 @@ exports.login = async (req, res, next) => {
 }
 
 
-exports.accountVerify = async (req, res, next) => {
 
-    try {
-
-        const userId = req.query.user_id
-        const data = await User.findOneAndUpdate({ _id: userId }, { $set: { verify_token: true } }, { new: true });
-        // if (data == 1) {
-        //     res.redirect(BASEURL + `v1/users/email-verify/verify?user_id=${userId}`)
-        // } else {
-        //     res.redirect(BASEURL + `v1/users/email-verify/unverify?user_id=${userId}`)
-        // }
-
-        sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'USER.user_account_verify', data, req.headers.lang);
-
-    } catch (err) {
-        console.log(err)
-        sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
-    }
-}
-
-
-exports.search_all_employee = async (req, res, next) => {
+exports.search_all_employee_by_email = async (req, res, next) => {
 
     try {
 
@@ -194,16 +174,18 @@ exports.search_all_employee = async (req, res, next) => {
             jobTitle: 1,
             department: 1,
             hireDate: 1,
-            department: 1,
-            user_type: 1
+            department: 1
         };
 
 
-        const Empoyee = await User.find(query, projection)
-            .populate('department', 'description departmentName status')
+        const Empoyee = await User.find(query, projection ,{user_type:3})
+            .populate('departmentId' , 'name description head isActive location')
             .sort({ [sortBy]: sortOrder === "asc" ? 1 : -1 })
             .skip(skip)
             .limit(parseInt(limit));
+
+            if (!Empoyee)
+            return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'USER.Employee_not_found', departments, req.headers.lang);
 
         Empoyee.map((userType) => {
 
@@ -223,43 +205,17 @@ exports.search_all_employee = async (req, res, next) => {
 
 
 
-exports.search_employee = async (req, res, next) => {
+exports.get_all_employee = async (req, res, next) => {
 
-    try {
+ try {
 
-        const {
-            email,
-            mobileNumber,
-            page = 1,
-            limit = 10,
-            offset = 0,
-            sortBy = "created_at",
-            sortOrder = "email",
-        } = req.query;
+        const Employee = await User.find({user_type: 3} , {refresh_tokens_expires:0,verify_token:0, deleted_at:0,created_at:0,updated_at:0,tempTokens:0,user_type:0,tokens:0,password:0 , refresh_tokens:0})
+        .populate('departmentId' , 'name description head isActive location');
+        
+        if (!Employee)
+        return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'USER.Employee_not_found', departments, req.headers.lang);
 
-        const query = {};
-
-        if (email) {
-            query.email = { $regex: email, $options: "i" }; // Case-insensitive search by email
-        }
-
-        if (mobileNumber) {
-            query.mobileNumber = { $regex: mobileNumber, $options: "i" }; // Case-insensitive search by customer name
-        }
-        // Calculate skip for pagination
-        const skip = (parseInt(page) - 1) * parseInt(limit) + parseInt(offset);
-
-        const Employee = await User.findOne({ user_type: 3 || email || mobileNumber || firstName })
-            .populate('department', 'description departmentName status')
-            .sort({ [sortBy]: sortOrder === "asc" ? 1 : -1 })
-            .skip(skip)
-            .limit(parseInt(limit));
-
-        if (Employee.user_type === 1 || Employee.user_type === 2) {
-            sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'USER.only_searched_employees_data', {}, req.headers.lang);
-        }
-
-        sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'USER.search_employee', Employee, req.headers.lang);
+       return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'USER.search_employee', Employee, req.headers.lang);
 
     } catch (err) {
         console.log(err)
@@ -267,6 +223,38 @@ exports.search_employee = async (req, res, next) => {
     }
 
 }
+
+exports.update_role = async (req, res, next) => {
+
+    try {
+
+        const { employeeId } = req.query;
+        const reqBody = req.body;
+        const bearerToken = req.headers.authorization;
+
+        if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
+            return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
+        }
+
+        const token = bearerToken.replace('Bearer ', '');
+
+        const decoded = jwt.verify(token, JWT_SECRET); // Replace with your actual secret key
+
+        const checkAdmin = await User.findById(decoded._id);
+
+        if (checkAdmin.user_type !== 1)
+            return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({ status: constants.STATUS_CODE.FAIL, msg: 'user not admin' })
+        reqBody.updated_at = dateFormat.set_current_date();
+        await User.findOneAndUpdate({ _id: employeeId }, reqBody, { new: true });
+
+        return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'USER.update_role', {}, req.headers.lang);
+
+    } catch (err) {
+        console.log(err)
+        return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+    }
+}
+
 
 
 

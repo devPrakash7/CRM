@@ -3,12 +3,12 @@ const { body, query, validationResult } = require('express-validator');
 
 exports.add_department_validator = [
 
-       body('departmentName')
+       body('name')
        .not()
       .isEmpty()
-      .withMessage('departmentName is required')
+      .withMessage('name is required')
       .isString()
-      .withMessage('departmentName should be a string')
+      .withMessage('name should be a string')
       .trim(),
 
       body('description')
@@ -18,22 +18,30 @@ exports.add_department_validator = [
      .isString()
      .withMessage('description should be a string')
      .trim(),
+
+     body('location')
+      .not()
+     .isEmpty()
+     .withMessage('location is required')
+     .isString()
+     .withMessage('location should be a string')
+     .trim(),
 ]
 
 exports.get_department_validator = [
 
-    body('departmentName')
+    query('name')
     .not()
    .isEmpty()
-   .withMessage('departmentName is required')
+   .withMessage('name is required')
    .isString()
-   .withMessage('departmentName should be a string')
+   .withMessage('name should be a string')
    .trim(),
 ]
 
 exports.department_status_validator = [
 
-    body('departmentId')
+    query('departmentId')
     .not()
    .isEmpty()
    .withMessage('departmentId is required')
@@ -72,8 +80,8 @@ exports.delete_department_validator = [
 
 exports.ValidatorResult = (req, res, next) => {
 
-    exports. result = validationResult(req);
-    exports. haserror = !result.isEmpty();
+    const result = validationResult(req);
+    const haserror = !result.isEmpty();
   
     if (haserror) {
       exports. err = result.array()[0].msg;

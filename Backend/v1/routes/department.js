@@ -12,7 +12,7 @@ router.get('/search_all_departments', get_all_departments)
 router.get('/search_department',get_department_validator, ValidatorResult, get_department)
 router.put('/update_department',update_department_validator , ValidatorResult, adminAuthenticate, update_department)
 router.delete('/delete_department',delete_department_validator , ValidatorResult, adminAuthenticate, delete_department)
-router.put('/department_status_updated' ,department_status_validator, ValidatorResult, department_status)
+router.put('/department_status_updated' ,department_status_validator, ValidatorResult, adminAuthenticate , department_status)
 
 
 

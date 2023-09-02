@@ -1,7 +1,7 @@
 
 const { body,query, validationResult } = require('express-validator');
 
-
+const validGender = ["male" , "female" , "transgender"]
 //validate user form detail
 exports.user_validator = [
 
@@ -63,6 +63,26 @@ exports.user_validator = [
       .isString()
       .withMessage('jobTitle shoulde be a string')
       .trim() ,
+
+      body('age')
+      .not()
+      .isEmpty()
+      .withMessage('age is required')
+      .isNumeric()
+      .withMessage('age shoulde be a Number')
+      .isLength({max:2})
+      .withMessage('age length should be a two')
+      .trim() ,
+
+      body('gender')
+      .not()
+      .isEmpty()
+      .withMessage('gender is required')
+      .isString()
+      .withMessage('gender shoulde be a string')
+      .isIn(validGender)
+      .withMessage('please enter a valid gender')
+      .trim() ,
  
 ];
 
@@ -106,16 +126,24 @@ exports.search_all_employee_validator = [
 ]
 
 
-exports.search_employee_validator = [
+exports.update_role_validator = [
 
-  query('email')
+  body('user_type')
   .not()
   .isEmpty()
-  .withMessage('email or mobileNumer is required')
-  .isString()
-  .withMessage('email or mobileNumer should be a string')
-  .isEmail().withMessage('please enter a valid email')
+  .withMessage('user_type is required')
+  .isNumeric()
+  .withMessage('user_type should be a number')
   .trim(),
+
+  query('employeeId')
+  .not().isEmpty()
+  .withMessage('employeeId is required')
+  .isString()
+  .withMessage('employeeId shoulde be a string')
+  .isMongoId()
+  .withMessage('Please enter valid employeeId')
+  .trim() ,
 
 ]
 

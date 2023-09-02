@@ -34,7 +34,9 @@ module.exports = {
         update_employee:'sucessfully update employee',
         delete_employee:'sucessfully delete employee',
         check_for_admin:'your are not admin , only admin can be added',
-        only_searched_employees_data : 'only searched employee this email or mobileNumber for admin or manager'
+        only_searched_employees_data : 'only searched employee this email or mobileNumber for admin or manager',
+        update_role : 'sucessfully update role',
+        Employee_not_found: 'employee data not found'
     },
 
     'DEPARTMENT':{

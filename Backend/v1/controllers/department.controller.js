@@ -20,6 +20,7 @@ exports.add_department = async (req, res) => {
 
         const reqBody = req.body;
         const bearerToken = req.headers.authorization;
+        const employee = req.user._id;
 
         if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
             return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
@@ -34,6 +35,7 @@ exports.add_department = async (req, res) => {
             return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DEPARTMENT.department_name_already_exist', {}, req.headers.lang);
         reqBody.created_at = dateFormat.set_current_timestamp();
         reqBody.updated_at = dateFormat.set_current_timestamp();
+        reqBody.employeeId = employee;
         const department = await Departmentsave(reqBody)
         return sendResponse(res, constants.WEB_STATUS_CODE.CREATED, constants.STATUS_CODE.SUCCESS, 'DEPARTMENT.add_department', department, req.headers.lang);
 
@@ -49,7 +51,9 @@ exports.get_all_departments = async (req, res) => {
 
     try {
 
-        const departments = await Department.find({}, { departmentName: 1, description: 1, status: 1 });
+        const departments = await Department.find({}, { name: 1, description: 1, location: 1 , isActive:1 , head:1 })
+        .populate('employeeId' , 'firstName lastName age gender email');
+
         if (!departments)
             return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DEPARTMENT.department data found', departments, req.headers.lang);
 
@@ -66,8 +70,9 @@ exports.get_department = async (req, res) => {
 
     try {
 
-        let { departmentName } = req.query;
-        const departments = await Department.findOne({ departmentName });
+        let { name } = req.query;
+        const departments = await Department.findOne({ name: name }).populate('employeeId' , 'firstName lastName age gender email');
+        console.log(departments)
         if (!departments)
             return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DEPARTMENT.department data found', departments, req.headers.lang);
 
@@ -85,9 +90,19 @@ exports.department_status = async (req , res) => {
     try {
 
         let { departmentId } = req.query;
+        const bearerToken = req.headers.authorization;
+        if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
+            return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
+        }
+        const token = bearerToken.replace('Bearer ', '');
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const checkAdmin = await User.findById(decoded._id);
+        if (checkAdmin.user_type !== 1)
+            return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DEPARTMENT.check_for_admin', {}, req.headers.lang);
+       
         const departments = await Department.findOneAndUpdate({_id: departmentId } , {$set: {status: constants.DEPARTMENT_STATUS[0]}});
         if (!departments)
-            return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DEPARTMENT.department data found', departments, req.headers.lang);
+            return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DEPARTMENT.department data found', {}, req.headers.lang);
 
         return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'DEPARTMENT.department_status_updated', departments, req.headers.lang);
 
@@ -136,7 +151,6 @@ exports.delete_department = async (req , res) => {
     try {
 
         let { departmentId } = req.query;
-        
         const bearerToken = req.headers.authorization;
 
         if (!bearerToken || !bearerToken.startsWith('Bearer ')) {

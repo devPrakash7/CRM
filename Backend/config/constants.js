@@ -23,8 +23,8 @@ module.exports = {
 		'EMPLOYEE': 3
 	},
 	'ATTENDANCE_STATUS': {
-		'PRESENT': 'present',
-		'ABSENT': 'absent',
+		'PRESENT': 'check in',
+		'ABSENT': 'check out',
 	},
 	'SOCIAL_LOGIN_TYPE': {
 		'FACEBOOK': 1,

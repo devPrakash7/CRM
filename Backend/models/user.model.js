@@ -29,7 +29,7 @@ const userSchema = new Schema({
   lastName: {
     type: String,
   },
-  department: {
+  departmentId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'department', 
     default:null
@@ -42,6 +42,12 @@ const userSchema = new Schema({
   user_type: {
     type: Number, // admin-1 , 3-employee , 2-manager
     default: 3,
+  },
+  age:{
+    type:Number
+  },
+  gender:{
+    type:String,
   },
   status: {
     type: Number,
