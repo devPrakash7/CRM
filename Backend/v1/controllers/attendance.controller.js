@@ -71,7 +71,7 @@ exports.update_attendance_status = async (req , res) => {
 
         const attendanceId = req.query.attendanceId;
         // Check if the user exists
-        const user = await attendance.findOneand({_id:attendanceId}).populate('employeeId' , 'mobileNumber email firstName lastName')
+        const user = await attendance.findOneandUpdate({_id: attendanceId }).populate('employeeId' , 'mobileNumber email firstName lastName')
 
         if (!user) 
         return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'ATTENDANCE.employee_not_found', {} , req.headers.lang);

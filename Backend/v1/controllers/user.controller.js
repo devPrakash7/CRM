@@ -224,36 +224,6 @@ exports.get_all_employee = async (req, res, next) => {
 
 }
 
-exports.update_role = async (req, res, next) => {
-
-    try {
-
-        const { employeeId } = req.query;
-        const reqBody = req.body;
-        const bearerToken = req.headers.authorization;
-
-        if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
-            return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
-        }
-
-        const token = bearerToken.replace('Bearer ', '');
-
-        const decoded = jwt.verify(token, JWT_SECRET); // Replace with your actual secret key
-
-        const checkAdmin = await User.findById(decoded._id);
-
-        if (checkAdmin.user_type !== 1)
-            return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({ status: constants.STATUS_CODE.FAIL, msg: 'user not admin' })
-        reqBody.updated_at = dateFormat.set_current_date();
-        await User.findOneAndUpdate({ _id: employeeId }, reqBody, { new: true });
-
-        return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'USER.update_role', {}, req.headers.lang);
-
-    } catch (err) {
-        console.log(err)
-        return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
-    }
-}
 
 
 

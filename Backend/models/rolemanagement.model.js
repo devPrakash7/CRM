@@ -1,16 +1,20 @@
 const mongoose = require('mongoose');
-const constants = require('../config/constants')
-const dateformat = require("../helper/dateformat.helper")
 
 
 
 // Define the Department Schema
 const rolemanagementSchema = new mongoose.Schema({
 
-
   userType:{
     type:String,
   },
+  role:{
+    type:String
+  },
+  email:{
+    type:String,
+  },
+  name:String,
   userTypeName:{
     type:String,
   },
@@ -27,7 +31,7 @@ const rolemanagementSchema = new mongoose.Schema({
 });
 
 
-rolemanagement.methods.toJSON = function () {
+rolemanagementSchema.methods.toJSON = function () {
   const rolemanagement = this;
   const rolemanagementObject = rolemanagement.toObject();
   return rolemanagementObject;

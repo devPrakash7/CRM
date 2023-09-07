@@ -11,7 +11,7 @@ const adminRouter = require('./admin/routes/admin')
 const departmentRouter = require('./v1/routes/department')
 const managerRouter = require('./manager/routes/manager_routes')
 const attendanceRouter = require('./v1/routes/attendance')
-
+const roleRouter = require('./v1/routes/role')
 
 
 
@@ -48,7 +48,7 @@ app.use('/v1/department' , departmentRouter)
 app.use('/admin' , adminRouter)
 app.use('/manager' , managerRouter)
 app.use('/v1/attendance' , attendanceRouter)
-
+app.use('/v1/role' , roleRouter)
 
 //Database connection with mongodb
 const mongoose = require('./config/database');

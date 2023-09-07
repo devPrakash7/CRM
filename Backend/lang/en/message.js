@@ -59,6 +59,13 @@ module.exports = {
         employee_not_found : 'employee not found'
     },
 
+    'ROLE':{
+       add_role : 'successfully add role',
+       get_role : 'return successfully all the role',
+       update_role: 'admin successfully update role',
+       delete_role: 'admin successfully delete role'
+    },
+
     'GENERAL': {
         
         general_error_content: 'Something went wrong. Please try again later.',
