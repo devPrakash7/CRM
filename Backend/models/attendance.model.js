@@ -10,9 +10,12 @@ const attendanceSchema = new Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'employee',
     },
-    date: {
-        type:String,
-        default:dateFormat.set_current_timestamp()
+    clockIn: {
+      type: Date,
+      required: true,
+    },
+    clockOut: {
+      type: Date,
     },
     attendance_type: {
         type:String,

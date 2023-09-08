@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 
-
+ 
 
 const PayrollmanagementSchema = new Schema({
 
@@ -46,6 +46,6 @@ const PayrollmanagementSchema = new Schema({
     return PayrollmanagementObject;
   };
 
-
+ 
   const Payrollmanagement = mongoose.model('WorkDetails', PayrollmanagementSchema);
-  module.exports = Payrollmanagement;
+  module.exports = Payrollmanagement;                                                                                                                                 

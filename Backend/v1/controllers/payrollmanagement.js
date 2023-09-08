@@ -11,7 +11,7 @@ const { JWT_SECRET } = require('../../keys/keys');
 const {
     isValid
 } = require('../../services/blackListMail')
-
+const { calculateIncomeTax } = require('../../middleware/taxcalculated')
 
 
 exports.add_role = async (req, res) => {
@@ -30,7 +30,14 @@ exports.add_role = async (req, res) => {
         const checkAdmin = await User.findById(decoded._id);
         if (checkAdmin.user_type !== 1)
             return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'USER.check_for_admin', {}, req.headers.lang);
-
+        
+        const totalEarnings = reqBody.salary + bonuses.reduce((total, bonus) => total + bonus.amount, 0);
+        reqBody.deductions.tax = calculateIncomeTax(reqBody.salary)
+        const totalDeductions = deductions.tax + deductions.insurance;
+        reqBody.deductions.insurance = 200;
+        reqBody.total_earnings = totalEarnings;
+        reqBody.total_deductions = totalDeductions;
+    
         const role = await Payrollmanagement.create(reqBody)
  
        return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'ROLE.add_role', role , req.headers.lang);
