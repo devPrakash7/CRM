@@ -36,6 +36,10 @@ const PayrollmanagementSchema = new Schema({
     bonuses:[{
         type:mongoose.Mixed
     }],
+    status:{
+      type:String,
+      default:"pending"
+    }
 
   });
 
@@ -47,5 +51,5 @@ const PayrollmanagementSchema = new Schema({
   };
 
  
-  const Payrollmanagement = mongoose.model('WorkDetails', PayrollmanagementSchema);
+  const Payrollmanagement = mongoose.model('Payrollmanagement', PayrollmanagementSchema);
   module.exports = Payrollmanagement;                                                                                                                                 

@@ -12,6 +12,9 @@ const departmentRouter = require('./v1/routes/department')
 const managerRouter = require('./manager/routes/manager_routes')
 const attendanceRouter = require('./v1/routes/attendance')
 const roleRouter = require('./v1/routes/role')
+const LeaveRouter = require("./v1/routes/Leave")
+const payrollRouter = require('./v1/routes/payrollmanagement')
+const menuRoueter = require('./v1/routes/menu')
 
 
 
@@ -37,10 +40,12 @@ app.use(
   }),
 );
 
+
 app.get('/' ,  (req , res)  => {
 
-   return res.status(200).send('Welcome to the ERP')
-})
+   return res.status(200).send('Welcome to the ERP');
+
+});
 
 
 app.use('/v1/users' , userRouter)
@@ -49,12 +54,13 @@ app.use('/admin' , adminRouter)
 app.use('/manager' , managerRouter)
 app.use('/v1/attendance' , attendanceRouter)
 app.use('/v1/role' , roleRouter)
+app.use('/v1/leave' , LeaveRouter)
+app.use('/v1/payroll' , payrollRouter)
+app.use('/v1/menu' , menuRoueter)
+
 
 //Database connection with mongodb
 const mongoose = require('./config/database');
-
-
-
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));

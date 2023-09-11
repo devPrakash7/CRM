@@ -65,7 +65,26 @@ module.exports = {
        update_role: 'admin successfully update role',
        delete_role: 'admin successfully delete role'
     },
-
+    'LEAVES':{
+        create_leave: 'successfully add Leave',
+        employeeId_not_found: 'employee id not found',
+        get_all_leave: "return all the Leave",
+        not_found: 'Leaves data not found',
+        update_leave:'successfully update leave status'
+    },
+    'PAYROLL':{
+        add_payroll: 'successfully add payroll',
+        get_menu: "return get menu",
+        not_found: 'Leaves data not found',
+        update_payroll:'successfully update payroll status'
+    },
+    'MENU':{
+        add_menu: 'successfully add menu',
+        employeeId_not_found: 'employee id not found',
+        get_all_payroll: "return all the payroll",
+        not_found: 'menu data not found',
+        update_menu:'successfully update menu item'
+    },
     'GENERAL': {
         
         general_error_content: 'Something went wrong. Please try again later.',

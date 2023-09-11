@@ -1,32 +1,42 @@
 const mongoose = require('mongoose');
 
+
 // Schema for employee leave requests
 const leaveSchema = new mongoose.Schema({
 
   employeeId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'employee',
-    required: true,
   },
   leaveType: {
     type: String,
-    required: true,
   },
   startDate: {
-    type: Date,
-    required: true,
+    type: String,
   },
   endDate: {
-    type: Date,
-    required: true,
+    type: String,
   },
   status: {
-    type: String, // Pending, Approved, Rejected, etc.
+    type: String,
+    enum:["Pending" , "Approved" , "Rejected"], // Pending, Approved, Rejected, etc.
     default: 'Pending',
   },
+  Approved_by:{
+    type:String,
+    default:null
+  },
   comments: String,
-  
+  updated_at: String
 });
+
+
+leaveSchema.methods.toJSON = function () {
+  const leave = this;
+  const leaveObject = leave.toObject();
+  return leaveObject;
+};
+
 
 const Leave = mongoose.model('Leave', leaveSchema);
 
