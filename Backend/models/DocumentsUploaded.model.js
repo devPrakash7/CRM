@@ -2,15 +2,12 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 
 
-
-
 const documentsSchema = new Schema({
 
     employeeId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'employee',
     },
-
     document_type: {
         type: String
     },
@@ -21,7 +18,10 @@ const documentsSchema = new Schema({
         type: String
     },
     upload_date: {
-        type: Date
+        type: String
+    },
+    updated_at:{
+        type:String
     }
 });
 

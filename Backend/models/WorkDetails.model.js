@@ -3,7 +3,6 @@ const Schema = mongoose.Schema;
 const dateFormat = require("../helper/dateformat.helper")
 
 
-
 const WorkDetailsSchema = new Schema({
 
     employeeId: {

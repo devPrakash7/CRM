@@ -15,7 +15,7 @@ const roleRouter = require('./v1/routes/role')
 const LeaveRouter = require("./v1/routes/Leave")
 const payrollRouter = require('./v1/routes/payrollmanagement')
 const menuRoueter = require('./v1/routes/menu')
-
+const documentRouter = require('./v1/routes/document')
 
 
 app.use(flash());
@@ -43,7 +43,7 @@ app.use(
 
 app.get('/' ,  (req , res)  => {
 
-   return res.status(200).send('Welcome to the ERP');
+   return res.status(200).send('Welcome to the HRMS');
 
 });
 
@@ -57,6 +57,7 @@ app.use('/v1/role' , roleRouter)
 app.use('/v1/leave' , LeaveRouter)
 app.use('/v1/payroll' , payrollRouter)
 app.use('/v1/menu' , menuRoueter)
+app.use('/v1/document' , documentRouter)
 
 
 //Database connection with mongodb

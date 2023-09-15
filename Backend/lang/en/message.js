@@ -85,6 +85,16 @@ module.exports = {
         not_found: 'menu data not found',
         update_menu:'successfully update menu item'
     },
+    'DOCUMENTS':{
+        add_documents: ' successfully add the documents',
+        check_for_admin:'your are not admin',
+        not_found: 'employee Id not found',
+        no_documents_upload: 'No document uploaded',
+        get_document:'successfully return all the documents',
+        update_documents:'successfully updated documents',
+        delete_documents:'successfully deleted documents'
+    },
+
     'GENERAL': {
         
         general_error_content: 'Something went wrong. Please try again later.',
