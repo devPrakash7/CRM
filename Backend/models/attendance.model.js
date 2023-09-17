@@ -10,13 +10,6 @@ const attendanceSchema = new Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'employee',
     },
-    // clockIn: {
-    //   type: Date,
-    //   required: true,
-    // },
-    // clockOut: {
-    //   type: Date,
-    // },
     attendance_type: {
         type:String,
         default: constants.ATTENDANCE_STATUS.PRESENT // 'present', 'absent', etc.
@@ -26,7 +19,6 @@ const attendanceSchema = new Schema({
     }
 
   });
-
 
   attendanceSchema.methods.toJSON = function () {
     const attendance = this;
