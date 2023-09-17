@@ -11,6 +11,8 @@ const {
     JWT_SECRET
 } = require('../../keys/keys');
 const Department = require("../../models/department.model")
+const { admin_check_function }  = require('../../middleware/admin.check.function')
+
 
 
 
@@ -25,11 +27,9 @@ exports.add_department = async (req, res) => {
         if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
             return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
         }
-        const token = bearerToken.replace('Bearer ', '');
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const checkAdmin = await User.findById(decoded._id);
-        if (checkAdmin.user_type !== 1)
-            return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DEPARTMENT.check_for_admin', {}, req.headers.lang);
+
+       admin_check_function(bearerToken);
+
         const exist_departmentName = await Department.findOne({ departmentName: reqBody.departmentName })
         if (exist_departmentName)
             return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DEPARTMENT.department_name_already_exist', {}, req.headers.lang);
@@ -50,40 +50,83 @@ exports.add_department = async (req, res) => {
 exports.get_all_departments = async (req, res) => {
 
     try {
-
-        const departments = await Department.find({}, { name: 1, description: 1, location: 1 , isActive:1 , head:1 })
-        .populate('employeeId' , 'firstName lastName age gender email');
-
-        if (!departments)
-            return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DEPARTMENT.department data found', departments, req.headers.lang);
-
-        return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'DEPARTMENT.list_of_departments', departments, req.headers.lang);
-
+      // Parse query parameters for pagination
+      const page = parseInt(req.query.page) || 1; // Current page number (default to 1)
+      const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page (default to 10)
+  
+      const skip = (page - 1) * pageSize;
+  
+      // Parse query parameters for sorting
+      const sortField = req.query.sortField || 'name'; // Default to sorting by 'name'
+      const sortOrder = req.query.sortOrder || 'asc'; // Default to ascending order
+  
+      // Create a sorting order object based on the sortOrder parameter
+      const sortOptions = {};
+      sortOptions[sortField] = sortOrder === 'asc' ? 1 : -1;
+  
+      // Use Mongoose's `find` method to retrieve paginated and sorted data
+      const departments = await Department
+        .find({}, { name: 1, description: 1, location: 1, isActive: 1, head: 1 })
+        .populate('employeeId', 'firstName lastName age gender email')
+        .skip(skip)
+        .limit(pageSize)
+        .sort(sortOptions);
+  
+      if (!departments || departments.length === 0) {
+        return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DEPARTMENT.department_data_not_found', {}, req.headers.lang);
+      }
+  
+      return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'DEPARTMENT.list_of_departments', departments, req.headers.lang);
     } catch (err) {
-        console.log("Error(get_all_department)", err)
-        return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+      console.error("Error(get_all_departments)", err);
+      return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang);
     }
-}
+  };
+  
 
 
 exports.get_department = async (req, res) => {
-
+    
     try {
-
-        let { name } = req.query;
-        const departments = await Department.findOne({ name: name }).populate('employeeId' , 'firstName lastName age gender email');
-        console.log(departments)
-        if (!departments)
-            return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DEPARTMENT.department data found', departments, req.headers.lang);
-
-        return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'DEPARTMENT.list_of_departments', departments, req.headers.lang);
-
+      // Parse query parameters for pagination
+      const page = parseInt(req.query.page) || 1; // Current page number (default to 1)
+      const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page (default to 10)
+  
+      const skip = (page - 1) * pageSize;
+  
+      // Parse query parameters for filtering (example: name)
+      const filterCriteria = {};
+      if (req.query.departmentName) {
+        filterCriteria.departmentName = req.query.departmentName;
+      }
+  
+      // Parse query parameters for sorting
+      const sortField = req.query.sortField || '_id'; // Default to sorting by '_id'
+      const sortOrder = req.query.sortOrder || 'asc'; // Default to ascending order
+  
+      // Create a sorting order object based on the sortOrder parameter
+      const sortOptions = {};
+      sortOptions[sortField] = sortOrder === 'asc' ? 1 : -1;
+  
+      // Use Mongoose's `find` method to retrieve paginated, filtered, and sorted data
+      const departments = await Department
+        .find(filterCriteria)
+        .populate('employeeId', 'firstName lastName age gender email')
+        .skip(skip)
+        .limit(pageSize)
+        .sort(sortOptions);
+  
+      if (!departments || departments.length === 0) {
+        return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DEPARTMENT.department_data_not_found', {}, req.headers.lang);
+      }
+  
+      return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'DEPARTMENT.list_of_departments', departments, req.headers.lang);
     } catch (err) {
-        console.log("Error(get_department)", err)
-        return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+      console.error("Error(get_department)", err);
+      return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang);
     }
-}
-
+  };
+  
 
 exports.department_status = async (req , res) => {
 
@@ -94,12 +137,7 @@ exports.department_status = async (req , res) => {
         if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
             return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
         }
-        const token = bearerToken.replace('Bearer ', '');
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const checkAdmin = await User.findById(decoded._id);
-        if (checkAdmin.user_type !== 1)
-            return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DEPARTMENT.check_for_admin', {}, req.headers.lang);
-       
+        admin_check_function(bearerToken);
         const departments = await Department.findOneAndUpdate({_id: departmentId } , {$set: {status: constants.DEPARTMENT_STATUS[0]}});
         if (!departments)
             return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DEPARTMENT.department data found', {}, req.headers.lang);
@@ -107,7 +145,7 @@ exports.department_status = async (req , res) => {
         return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'DEPARTMENT.department_status_updated', departments, req.headers.lang);
 
     } catch (err) {
-        console.log("Error(get_department)", err)
+        console.log("Error(department_status)", err)
         return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
     }
 
@@ -118,17 +156,11 @@ exports.update_department = async (req , res) => {
     try {
 
         let { departmentId } = req.query;
-        
         const bearerToken = req.headers.authorization;
-
-        if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
+        if (!bearerToken || !bearerToken.startsWith('Bearer ')) 
             return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
-        }
-        const token = bearerToken.replace('Bearer ', '');
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const checkAdmin = await User.findById(decoded._id);
-        if (checkAdmin.user_type !== 1)
-            return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DEPARTMENT.check_for_admin', {}, req.headers.lang);
+
+        admin_check_function(bearerToken);
         const departments = await Department.findOneAndUpdate({ _id: departmentId} , req.body , {new:true})
         if (!departments)
         return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DEPARTMENT.department data found', departments, req.headers.lang);
@@ -156,11 +188,7 @@ exports.delete_department = async (req , res) => {
         if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
             return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
         }
-        const token = bearerToken.replace('Bearer ', '');
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const checkAdmin = await User.findById(decoded._id);
-        if (checkAdmin.user_type !== 1)
-            return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DEPARTMENT.check_for_admin', {}, req.headers.lang);
+        admin_check_function(bearerToken)
         const departments = await Department.findByIdAndDelete(departmentId)
       
         if (!departments)

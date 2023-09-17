@@ -94,9 +94,15 @@ module.exports = {
         update_documents:'successfully updated documents',
         delete_documents:'successfully deleted documents'
     },
+    'WORK':{
+       check_admin:'access denined.only accessed by admin and manager',
+       check_is_array:'assigned_to should be an array of employeeIds',
+       add_work:'successfully added work details',
+       get_all_work: 'successfully return all the work details',
+       updated_documents: 'successfully updated work details'
 
+    },
     'GENERAL': {
-        
         general_error_content: 'Something went wrong. Please try again later.',
         unauthorized_user: 'Unauthorized, please login.',
         invalid_user: 'You are not authorized to do this operation.',

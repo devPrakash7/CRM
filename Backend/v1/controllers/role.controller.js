@@ -11,7 +11,7 @@ const { JWT_SECRET } = require('../../keys/keys');
 const {
     isValid
 } = require('../../services/blackListMail')
-
+const {admin_check_function} = require('../../middleware/admin.check.function')
 
 
 exports.add_role = async (req, res) => {
@@ -24,11 +24,7 @@ exports.add_role = async (req, res) => {
         if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
             return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
         }
-        const token = bearerToken.replace('Bearer ', '');
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const checkAdmin = await User.findById(decoded._id);
-        if (checkAdmin.user_type !== 1)
-            return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'USER.check_for_admin', {}, req.headers.lang);
+        admin_check_function(bearerToken)
 
         const checkMail = await isValid(reqBody.email)
         if (checkMail == false) return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'GENERAL.blackList_mail', {}, req.headers.lang);
@@ -48,19 +44,38 @@ exports.add_role = async (req, res) => {
 
 
 exports.search_all_role = async (req, res, next) => {
-
+    
     try {
-
-       const roles = await rolemanagement.find({} , {updated_at:0, _id:0 , __v:0 })
-       return  sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'ROLE.get_role', roles , req.headers.lang);
-
+      // Parse query parameters for pagination
+      const page = parseInt(req.query.page) || 1; // Current page number (default to 1)
+      const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page (default to 10)
+  
+      const skip = (page - 1) * pageSize;
+  
+      // Parse query parameter for sorting
+      const sortField = req.query.sortField || '_id'; // Default to sorting by '_id'
+      const sortOrder = req.query.sortOrder || 'asc'; // Default to ascending order
+  
+      // Create a sorting order object based on the sortOrder parameter
+      const sortOptions = {};
+      sortOptions[sortField] = sortOrder === 'asc' ? 1 : -1;
+  
+      // Use Mongoose's `find` method to retrieve paginated and sorted data
+      const roles = await rolemanagement
+        .find({}, { updated_at: 0, _id: 0, __v: 0 })
+        .skip(skip)
+        .limit(pageSize)
+        .sort(sortOptions);
+  
+      return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'ROLE.get_role', roles, req.headers.lang);
     } catch (err) {
-        console.log(err)
-       return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+      console.error(err);
+      return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang);
     }
+  };
 
-}
-
+  
+  
 exports.update_role = async (req, res) => {
 
     try {
@@ -68,20 +83,12 @@ exports.update_role = async (req, res) => {
         const { roleId } = req.params;
         const reqBody = req.body
         const bearerToken = req.headers.authorization;
-
         if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
             return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
         }
-        const token = bearerToken.replace('Bearer ', '');
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const checkAdmin = await User.findById(decoded._id);
-        if (checkAdmin.user_type !== 1)
-            return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'USER.check_for_admin', {}, req.headers.lang);
-
+        admin_check_function(bearerToken)
         reqBody.updated_at = await dateFormat.set_current_timestamp();
-
         const role = await rolemanagement.findOneandUpdate({_id : roleId } , reqBody , { new:true })
- 
        return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'ROLE.update_role', role , req.headers.lang);
 
     } catch (err) {
@@ -102,12 +109,7 @@ exports.delete_role = async (req, res) => {
         if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
             return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
         }
-        const token = bearerToken.replace('Bearer ', '');
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const checkAdmin = await User.findById(decoded._id);
-        if (checkAdmin.user_type !== 1)
-            return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'USER.check_for_admin', {}, req.headers.lang);
-
+        admin_check_function(bearerToken)
         const role = await rolemanagement.findOneandDelete({_id : roleId })
  
        return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'ROLE.delete_role', role , req.headers.lang);

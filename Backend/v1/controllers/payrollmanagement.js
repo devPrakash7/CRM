@@ -9,7 +9,7 @@ const constants = require('../../config/constants')
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../../keys/keys');
 const { calculateBonuses, calculateTax, calculateInsurance } = require('../../middleware/taxcalculated')
-
+const {admin_check_function} = require('../../middleware/admin.check.function')
 
 
 exports.add_payroll = async (req, res) => {
@@ -22,11 +22,7 @@ exports.add_payroll = async (req, res) => {
         if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
             return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
         }
-        const token = bearerToken.replace('Bearer ', '');
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const checkAdmin = await User.findById(decoded._id);
-        if (checkAdmin.user_type !== 1)
-            return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'USER.check_for_admin', {}, req.headers.lang);
+        admin_check_function(bearerToken);
 
         // Sample calculation logic (replace with your actual calculation logic)
         const tax = calculateTax(salary); // Replace with your tax calculation function
@@ -104,12 +100,7 @@ exports.update_payroll = async (req, res) => {
         if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
             return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
         }
-        const token = bearerToken.replace('Bearer ', '');
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const checkAdmin = await User.findById(decoded._id);
-        if (checkAdmin.user_type !== 1)
-            return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'USER.check_for_admin', {}, req.headers.lang);
-
+        admin_check_function(bearerToken);
         const payrolls = await Payrollmanagement.findOneAndUpdate({_id: payrollId },{$set:{ status: "success" }} ,{ new:true });
 
         return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'PAYROLL.update_payroll', payrolls , req.headers.lang);

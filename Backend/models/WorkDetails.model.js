@@ -3,12 +3,9 @@ const Schema = mongoose.Schema;
 const dateFormat = require("../helper/dateformat.helper")
 
 
+
 const WorkDetailsSchema = new Schema({
 
-    employeeId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'employee',
-    },
     task_name: {
         type:String
     },
@@ -22,7 +19,7 @@ const WorkDetailsSchema = new Schema({
     },
     status:{
         type:String,
-        default:null
+        default:"inprogress"
     },
     priority:{
         type:String
@@ -30,9 +27,12 @@ const WorkDetailsSchema = new Schema({
     assigned_by:{
         type:String
     },
-    assigned_to:[{
-        type:String
-    }],
+    assigned_to:[
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'employee',
+        },
+      ],
     description:String,
     comments:[{
         type:mongoose.Mixed

@@ -8,7 +8,7 @@ const documents = require("../../models/DocumentsUploaded.model")
 const jwt = require('jsonwebtoken');
 const {JWT_SECRET} = require('../../keys/development.keys')
 const User = require("../../models/user.model")
-
+const {admin_check_function}  = require('../../middleware/admin.check.function')
 
 
 
@@ -23,12 +23,8 @@ try {
     if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
         return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
     }
-    const token = bearerToken.replace('Bearer ', '');
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const checkAdmin = await User.findById(decoded._id);
-    if (checkAdmin.user_type !== 1)
-        return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DOCUMENTS.check_for_admin', {}, req.headers.lang);
-  
+   admin_check_function(bearerToken);
+
     if(!employeeId)
     return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DOCUMENTS.not_found', {}, req.headers.lang);
     
@@ -51,23 +47,44 @@ try {
 
 }
 
-exports.get_all_document = async (req , res ) => {
+
+
+exports.get_all_document = async (req, res) => {
 
     try {
-    
-        const leaves = await documents.find().populate('employeeId' , 'email mobileNumber firstName lastName')
-
-        if(!leaves)
+      // Parse query parameters for pagination
+      const page = parseInt(req.query.page) || 1; // Current page number (default to 1)
+      const pageSize = parseInt(req.query.pageSize) || 10; // Number of items per page (default to 10)
+  
+      const skip = (page - 1) * pageSize;
+  
+      // Parse query parameters for sorting
+      const sortField = req.query.sortField || '_id'; // Default to sorting by '_id'
+      const sortOrder = req.query.sortOrder || 'asc'; // Default to ascending order
+  
+      // Create a sorting order object based on the sortOrder parameter
+      const sortOptions = {};
+      sortOptions[sortField] = sortOrder === 'asc' ? 1 : -1;
+  
+      // Use Mongoose's `find` method to retrieve paginated and sorted data
+      const document = await documents
+        .find()
+        .populate('employeeId', 'email mobileNumber firstName lastName')
+        .skip(skip)
+        .limit(pageSize)
+        .sort(sortOptions);
+  
+      if (!documents || documents.length === 0) {
         return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DOCUMENTS.not_found', {}, req.headers.lang);
-
-        return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'DOCUMENTS.get_document', leaves , req.headers.lang);
-    
+      }
+  
+      return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'DOCUMENTS.get_document', document, req.headers.lang);
     } catch (err) {
-        console.log("Error(get_all_document)", err)
-        return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+      console.error("Error(get_all_document)", err);
+      return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang);
     }
-    
-    }
+  };
+  
 
 
 exports.update_documents = async (req , res ) => {
@@ -80,11 +97,7 @@ exports.update_documents = async (req , res ) => {
         if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
             return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
         }
-        const token = bearerToken.replace('Bearer ', '');
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const checkAdmin = await User.findById(decoded._id);
-        if (checkAdmin.user_type !== 1)
-            return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DOCUMENTS.check_for_admin', {}, req.headers.lang);    
+        admin_check_function(bearerToken);
 
         if (!req.file) 
         return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DOCUMENTS.no_documents_upload', {}, req.headers.lang);
@@ -107,22 +120,17 @@ exports.update_documents = async (req , res ) => {
 exports.delete_documents = async (req , res ) => {
 
     try {
+    
         const { documentId } = req.query;
         const bearerToken = req.headers.authorization;
-
         if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
             return res.status(401).json({ message: 'Unauthorized: Bearer token missing or invalid' });
         }
-        const token = bearerToken.replace('Bearer ', '');
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const checkAdmin = await User.findById(decoded._id);
-        if (checkAdmin.user_type !== 1)
-            return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DOCUMENTS.check_for_admin', {}, req.headers.lang);    
-
+        admin_check_function(bearerToken);
          await documents.findOneAndDelete({ _id: documentId });
         return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'DOCUMENTS.delete_documents', {} , req.headers.lang);
     
-    } catch (err) {
+    } catch (err) {-
         console.log("Error(delete_documents)", err)
         return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
     }

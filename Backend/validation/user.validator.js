@@ -112,19 +112,6 @@ body('password')
   .trim() ,
 ];
 
-exports.search_all_employee_validator = [
-
-  query('email')
-  .not()
-  .isEmpty()
-  .withMessage('email or mobileNumer is required')
-  .isString()
-  .withMessage('email or mobileNumer should be a string')
-  .isEmail().withMessage('please enter a valid email')
-  .trim(),
-     
-]
-
 
 exports.update_role_validator = [
 

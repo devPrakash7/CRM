@@ -16,6 +16,8 @@ const LeaveRouter = require("./v1/routes/Leave")
 const payrollRouter = require('./v1/routes/payrollmanagement')
 const menuRoueter = require('./v1/routes/menu')
 const documentRouter = require('./v1/routes/document')
+const workdetailsRouter = require('./v1/routes/workdetalis')
+
 
 
 app.use(flash());
@@ -58,6 +60,7 @@ app.use('/v1/leave' , LeaveRouter)
 app.use('/v1/payroll' , payrollRouter)
 app.use('/v1/menu' , menuRoueter)
 app.use('/v1/document' , documentRouter)
+app.use('/v1/work' , workdetailsRouter)
 
 
 //Database connection with mongodb

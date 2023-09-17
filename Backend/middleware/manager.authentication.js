@@ -5,6 +5,8 @@ const { sendResponse } = require('../services/common.service');
 const { JWT_SECRET } = require('../keys/keys')
 
 
+
+
 //authenticate user
 let managerAuthenticate = async (req, res, next) => {
     

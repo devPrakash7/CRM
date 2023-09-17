@@ -30,12 +30,12 @@ exports.add_department_validator = [
 
 exports.get_department_validator = [
 
-    query('name')
+    query('departmentName')
     .not()
    .isEmpty()
-   .withMessage('name is required')
+   .withMessage('departmentName is required')
    .isString()
-   .withMessage('name should be a string')
+   .withMessage('departmentName should be a string')
    .trim(),
 ]
 
@@ -84,7 +84,7 @@ exports.ValidatorResult = (req, res, next) => {
     const haserror = !result.isEmpty();
   
     if (haserror) {
-      exports. err = result.array()[0].msg;
+      const err = result.array()[0].msg;
       return res.status(400).send({ sucess: false, message: err });
     }
   
